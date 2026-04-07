@@ -1,195 +1,166 @@
-import React from "react";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import axios from "axios";
+
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import BookingCard from "./components/BookingCard";
+import SeatMap from "./components/SeatMap";
+import BookingsList from "./components/BookingsList";
 
 export default function App() {
   const [date, setDate] = useState("");
+  const [seatClass, setSeatClass] = useState("economy");
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
   const [bookings, setBookings] = useState([]);
   const [bookedSeats, setBookedSeats] = useState([]);
+  const [message, setMessage] = useState("");
 
-  // Seat Layout
   const seats = [
     { id: "1A", class: "first" },
     { id: "1B", class: "first" },
-    { id: "1C", class: "first" },
-    { id: "1D", class: "first" },
-
     { id: "2A", class: "business" },
     { id: "2B", class: "business" },
-    { id: "2C", class: "business" },
-    { id: "2D", class: "business" },
-
     { id: "3A", class: "economy" },
-    { id: "3B", class: "economy" },
-    { id: "3C", class: "economy" },
-    { id: "3D", class: "economy" },
-
-    { id: "4A", class: "economy" },
-    { id: "4B", class: "economy" },
-    { id: "4C", class: "economy" },
-    { id: "4D", class: "economy" }
+    { id: "3B", class: "economy" }
   ];
 
-  const getSeatColor = (seatClass) => {
-    switch (seatClass) {
-      case "first":
-        return "bg-yellow-500";
-      case "business":
-        return "bg-blue-500";
-      case "economy":
-        return "bg-green-500";
-      default:
-        return "bg-gray-400";
-    }
-  };
-
-  const bookSeat = () => {
-    if (!name || !email || !date) {
-      setMessage("Please fill all fields");
+  // FETCH bookings
+  const fetchBookings = async () => {
+      if (!date) {
+      setMessage("Please select a date first");
       return;
     }
 
-    const newBooking = {
-      id: Date.now(),
-      seat: selectedSeat,
-      name,
-      email,
-      date
-    };
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/bookings/${date}`
+      );
 
-    setBookings([...bookings, newBooking]);
-    setBookedSeats([...bookedSeats, selectedSeat]);
-
-    setSelectedSeat(null);
-    setName("");
-    setEmail("");
-    setMessage("");
+      setBookings(res.data);
+      setBookedSeats(res.data.map(b => b.seat));
+      setMessage("");
+    } catch (err) {
+      setMessage("Failed to load bookings");
+    }
   };
 
-  const deleteBooking = (id) => {
-    const bookingToDelete = bookings.find((b) => b.id === id);
 
-    setBookings(bookings.filter((b) => b.id !== id));
-    setBookedSeats(bookedSeats.filter((s) => s !== bookingToDelete.seat));
+   /* ========================
+     CREATE BOOKING
+  ======================== */
+  const bookSeat = async () => {
+    if (!name || !email || !date || !selectedSeat) {
+      setMessage("Please fill all fields and select a seat");
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/bookings",
+        {
+          name,
+          email,
+          date,
+          seat: selectedSeat,
+          seatClass
+        }
+      );
+
+      setBookings([...bookings, res.data]);
+      setBookedSeats([...bookedSeats, selectedSeat]);
+
+      // Reset form
+      setMessage("Booking successful ✈️");
+      setName("");
+      setEmail("");
+      setSelectedSeat(null);
+
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Booking failed");
+    }
   };
 
-  const updateBooking = (id) => {
-    const newName = prompt("Enter new name:");
-    if (!newName) return;
 
-    setBookings(
-      bookings.map((b) =>
-        b.id === id ? { ...b, name: newName } : b
-      )
-    );
+    /* ========================
+     DELETE BOOKING
+  ======================== */
+  const deleteBooking = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/bookings/${id}`);
+
+      const updated = bookings.filter(b => b.id !== id);
+      setBookings(updated);
+      setBookedSeats(updated.map(b => b.seat));
+    } catch (err) {
+      setMessage("Failed to delete booking");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-blue-900 to-gray-900 text-white">
-      {/* Header */}
-      <header className="p-6 text-center">
-        <h1 className="text-3xl font-bold">✈️ AeroLux Airlines</h1>
-      </header>
+    <div className="bg-gray-100 min-h-screen">
+      <Navbar />
+      <Hero />
 
-      {/* Hero Section */}
-      <section className="text-center p-6">
-        <h2 className="text-4xl font-bold">Fly Beyond Limits</h2>
-        <p>Luxury travel made simple</p>
-      </section>
+      <BookingCard
+        date={date}
+        setDate={setDate}
+        selectedSeat={selectedSeat}
+        setSelectedSeat={setSelectedSeat}
+        name={name}
+        setName={setName}
+        email={email}
+        setEmail={setEmail}
+        message={message}
+        bookSeat={bookSeat}
+        seats={seats}
+        bookedSeats={bookedSeats}
+        seatClass={seatClass}
+        setSeatClass={setSeatClass}
+      />
 
-      {/* Booking Section */}
-      <section className="bg-white text-black max-w-3xl mx-auto p-6 rounded-xl shadow-xl">
-        <input
-          type="date"
-          className="border p-2 w-full mb-4"
-          onChange={(e) => setDate(e.target.value)}
+      <div className="max-w-3xl mx-auto p-6">
+        <button
+          onClick={fetchBookings}
+          className="bg-blue-600 text-white p-2 rounded mb-4"
+        >
+          Load Seats
+        </button>
+
+        <SeatMap
+          seats={seats}
+          bookedSeats={bookedSeats}
+          selectedSeat={selectedSeat}
+          setSelectedSeat={setSelectedSeat}
         />
 
-        {/* Seat Map */}
-        <div className="grid grid-cols-4 gap-3">
-          {seats.map((s) => {
-            const booked = bookedSeats.includes(s.id);
-            return (
-              <motion.button
-                key={s.id}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                disabled={booked}
-                onClick={() => setSelectedSeat(s.id)}
-                className={`p-3 text-white rounded-lg shadow ${
-                  booked
-                    ? "bg-red-500 cursor-not-allowed"
-                    : getSeatColor(s.class)
-                } ${
-                  selectedSeat === s.id ? "ring-4 ring-black" : ""
-                }`}
-              >
-                {s.id}
-              </motion.button>
-            );
-          })}
-        </div>
-
-        {message && <p className="text-red-500 mt-3">{message}</p>}
-
-        {/* Form */}
         {selectedSeat && (
           <div className="mt-4">
             <input
               placeholder="Name"
-              value={name}
               onChange={(e) => setName(e.target.value)}
               className="border p-2 w-full mb-2"
             />
             <input
               placeholder="Email"
-              value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="border p-2 w-full mb-2"
             />
             <button
               onClick={bookSeat}
-              className="bg-green-600 text-white w-full p-2 rounded-lg"
+              className="bg-green-600 text-white w-full p-2"
             >
               Confirm Booking
             </button>
           </div>
         )}
-      </section>
 
-      {/* Bookings List */}
-      <section className="p-6 max-w-3xl mx-auto">
-        <h2 className="text-xl font-bold mb-3">Bookings</h2>
-        {bookings.map((b) => (
-          <div
-            key={b.id}
-            className="flex justify-between items-center border p-3 mt-2 rounded-lg bg-gray-800"
-          >
-            <span>
-              {b.seat} - {b.name} ({b.date})
-            </span>
-            <div>
-              <button
-                onClick={() => updateBooking(b.id)}
-                className="text-blue-400 mr-3"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => deleteBooking(b.id)}
-                className="text-red-400"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </section>
+        <BookingsList
+          bookings={bookings}
+          deleteBooking={deleteBooking}
+        />
+      </div>
     </div>
   );
 }
-

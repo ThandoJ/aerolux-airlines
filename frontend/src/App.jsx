@@ -1,121 +1,195 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React from "react";
+import { useState } from "react";
+import { motion } from "framer-motion";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [date, setDate] = useState("");
+  const [selectedSeat, setSelectedSeat] = useState(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [bookings, setBookings] = useState([]);
+  const [bookedSeats, setBookedSeats] = useState([]);
+
+  // Seat Layout
+  const seats = [
+    { id: "1A", class: "first" },
+    { id: "1B", class: "first" },
+    { id: "1C", class: "first" },
+    { id: "1D", class: "first" },
+
+    { id: "2A", class: "business" },
+    { id: "2B", class: "business" },
+    { id: "2C", class: "business" },
+    { id: "2D", class: "business" },
+
+    { id: "3A", class: "economy" },
+    { id: "3B", class: "economy" },
+    { id: "3C", class: "economy" },
+    { id: "3D", class: "economy" },
+
+    { id: "4A", class: "economy" },
+    { id: "4B", class: "economy" },
+    { id: "4C", class: "economy" },
+    { id: "4D", class: "economy" }
+  ];
+
+  const getSeatColor = (seatClass) => {
+    switch (seatClass) {
+      case "first":
+        return "bg-yellow-500";
+      case "business":
+        return "bg-blue-500";
+      case "economy":
+        return "bg-green-500";
+      default:
+        return "bg-gray-400";
+    }
+  };
+
+  const bookSeat = () => {
+    if (!name || !email || !date) {
+      setMessage("Please fill all fields");
+      return;
+    }
+
+    const newBooking = {
+      id: Date.now(),
+      seat: selectedSeat,
+      name,
+      email,
+      date
+    };
+
+    setBookings([...bookings, newBooking]);
+    setBookedSeats([...bookedSeats, selectedSeat]);
+
+    setSelectedSeat(null);
+    setName("");
+    setEmail("");
+    setMessage("");
+  };
+
+  const deleteBooking = (id) => {
+    const bookingToDelete = bookings.find((b) => b.id === id);
+
+    setBookings(bookings.filter((b) => b.id !== id));
+    setBookedSeats(bookedSeats.filter((s) => s !== bookingToDelete.seat));
+  };
+
+  const updateBooking = (id) => {
+    const newName = prompt("Enter new name:");
+    if (!newName) return;
+
+    setBookings(
+      bookings.map((b) =>
+        b.id === id ? { ...b, name: newName } : b
+      )
+    );
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-black via-blue-900 to-gray-900 text-white">
+      {/* Header */}
+      <header className="p-6 text-center">
+        <h1 className="text-3xl font-bold">✈️ AeroLux Airlines</h1>
+      </header>
+
+      {/* Hero Section */}
+      <section className="text-center p-6">
+        <h2 className="text-4xl font-bold">Fly Beyond Limits</h2>
+        <p>Luxury travel made simple</p>
       </section>
 
-      <div className="ticks"></div>
+      {/* Booking Section */}
+      <section className="bg-white text-black max-w-3xl mx-auto p-6 rounded-xl shadow-xl">
+        <input
+          type="date"
+          className="border p-2 w-full mb-4"
+          onChange={(e) => setDate(e.target.value)}
+        />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        {/* Seat Map */}
+        <div className="grid grid-cols-4 gap-3">
+          {seats.map((s) => {
+            const booked = bookedSeats.includes(s.id);
+            return (
+              <motion.button
+                key={s.id}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                disabled={booked}
+                onClick={() => setSelectedSeat(s.id)}
+                className={`p-3 text-white rounded-lg shadow ${
+                  booked
+                    ? "bg-red-500 cursor-not-allowed"
+                    : getSeatColor(s.class)
+                } ${
+                  selectedSeat === s.id ? "ring-4 ring-black" : ""
+                }`}
+              >
+                {s.id}
+              </motion.button>
+            );
+          })}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
+
+        {message && <p className="text-red-500 mt-3">{message}</p>}
+
+        {/* Form */}
+        {selectedSeat && (
+          <div className="mt-4">
+            <input
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="border p-2 w-full mb-2"
+            />
+            <button
+              onClick={bookSeat}
+              className="bg-green-600 text-white w-full p-2 rounded-lg"
+            >
+              Confirm Booking
+            </button>
+          </div>
+        )}
       </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Bookings List */}
+      <section className="p-6 max-w-3xl mx-auto">
+        <h2 className="text-xl font-bold mb-3">Bookings</h2>
+        {bookings.map((b) => (
+          <div
+            key={b.id}
+            className="flex justify-between items-center border p-3 mt-2 rounded-lg bg-gray-800"
+          >
+            <span>
+              {b.seat} - {b.name} ({b.date})
+            </span>
+            <div>
+              <button
+                onClick={() => updateBooking(b.id)}
+                className="text-blue-400 mr-3"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => deleteBooking(b.id)}
+                className="text-red-400"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+      </section>
+    </div>
+  );
 }
 
-export default App

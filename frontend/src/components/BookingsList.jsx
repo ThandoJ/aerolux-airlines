@@ -9,8 +9,15 @@ export default function BookingList({ bookings, deleteBooking }) {
           className="flex justify-between bg-gray-800 text-white p-3 mt-2 rounded"
         >
           <span>
-            {b.seat} - {b.name} ({b.seatClass})
+            {b.seat} - {b.name} ({b.seatClass} {b.time})
           </span>
+          <div>
+           <button
+              onClick={() => updateBooking(b.id)}
+              className="text-blue-400 mr-3"
+            >
+              Edit
+            </button>
 
           <button
             onClick={() => deleteBooking(b.id)}
@@ -18,6 +25,7 @@ export default function BookingList({ bookings, deleteBooking }) {
           >
             Delete
           </button>
+        </div>
         </div>
       ))}
     </div>

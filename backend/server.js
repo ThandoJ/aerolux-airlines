@@ -16,15 +16,15 @@ app.get("/api/bookings/:date", (req, res) => {
 
 // CREATE booking
 app.post("/api/bookings", (req, res) => {
-  const { name, email, date, seat } = req.body;
+  const { name, email, date, seat, time } = req.body;
 
   if (!name || !email || !date || !seat) {
     return res.status(400).json({ message: "Missing fields" });
   }
 
   const conflict = bookings.find(
-    b => b.date === date && b.seat === seat
-  );
+  b => b.date === date && b.seat === seat && b.time === time
+);
 
   if (conflict) {
     return res.status(400).json({ message: "Seat already taken" });
@@ -35,12 +35,46 @@ app.post("/api/bookings", (req, res) => {
     name,
     email,
     date,
-    seat
+    seat,
+    time
   };
 
   bookings.push(newBooking);
   res.json(newBooking);
 });
+
+app.put("/api/bookings/:id", (req, res) => {
+  const { id } = req.params;
+  const { name, email, date, seat, time } = req.body;
+
+  const booking = bookings.find(b => b.id === id);
+  if (!booking) {
+    return res.status(404).json({ message: "Booking not found" });
+  }
+
+  // Prevent seat conflict (same date + time + seat)
+  const conflict = bookings.find(
+    b =>
+      b.date === date &&
+      b.time === time &&
+      b.seat === seat &&
+      b.id !== id
+  );
+
+  if (conflict) {
+    return res.status(400).json({ message: "Seat already taken for this time" });
+  }
+
+  // Update fields
+  booking.name = name || booking.name;
+  booking.email = email || booking.email;
+  booking.date = date || booking.date;
+  booking.seat = seat || booking.seat;
+  booking.time = time || booking.time;
+
+  res.json(booking);
+});
+
 
 // DELETE booking
 app.delete("/api/bookings/:id", (req, res) => {

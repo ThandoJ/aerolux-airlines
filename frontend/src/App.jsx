@@ -16,13 +16,29 @@ export default function App() {
   const [bookings, setBookings] = useState([]);
   const [bookedSeats, setBookedSeats] = useState([]);
   const [message, setMessage] = useState("");
+  const [time, setTime] = useState("");
 
   const seats = [
     { id: "1A", class: "first" },
     { id: "1B", class: "first" },
+    { id: "1C", class: "first" },
+    { id: "1D", class: "first" },
+    { id: "1E", class: "first" },
+    { id: "1F", class: "first" },
     { id: "2A", class: "business" },
     { id: "2B", class: "business" },
+    { id: "2C", class: "business" },
+    { id: "2D", class: "business" },
+    { id: "2E", class: "business" },
+    { id: "2F", class: "business" },
+    { id: "2G", class: "business" },
     { id: "3A", class: "economy" },
+    { id: "3B", class: "economy" },
+    { id: "3B", class: "economy" },
+    { id: "3B", class: "economy" },
+    { id: "3B", class: "economy" },
+    { id: "3B", class: "economy" },
+    { id: "3B", class: "economy" },
     { id: "3B", class: "economy" }
   ];
 
@@ -46,12 +62,41 @@ export default function App() {
     }
   };
 
+// ADDED UPDATE FUNCTION
+  const updateBooking = async (id) => {
+  const newName = prompt("Enter new name:");
+  const newTime = prompt("Enter new time (e.g. 12:00):");
+
+  if (!newName || !newTime) return;
+
+  try {
+    const res = await axios.put(
+      `http://localhost:5000/api/bookings/${id}`,
+      {
+        name: newName,
+        time: newTime,
+        date,
+        seat: selectedSeat
+      }
+    );
+
+    setBookings(
+      bookings.map((b) => (b.id === id ? res.data : b))
+    );
+
+    setMessage("Booking updated ✈️");
+
+  } catch (err) {
+    setMessage(err.response?.data?.message || "Update failed");
+  }
+};
+
 
    /* ========================
      CREATE BOOKING
   ======================== */
   const bookSeat = async () => {
-    if (!name || !email || !date || !selectedSeat) {
+    if (!name || !email || !date || !selectedSeat || !time) {
       setMessage("Please fill all fields and select a seat");
       return;
     }
@@ -64,7 +109,8 @@ export default function App() {
           email,
           date,
           seat: selectedSeat,
-          seatClass
+          seatClass,
+          time
         }
       );
 
@@ -118,6 +164,8 @@ export default function App() {
         bookedSeats={bookedSeats}
         seatClass={seatClass}
         setSeatClass={setSeatClass}
+        time={time} 
+        setTime={setTime}
       />
 
       <div className="max-w-3xl mx-auto p-6">
@@ -135,30 +183,13 @@ export default function App() {
           setSelectedSeat={setSelectedSeat}
         />
 
-        {selectedSeat && (
-          <div className="mt-4">
-            <input
-              placeholder="Name"
-              onChange={(e) => setName(e.target.value)}
-              className="border p-2 w-full mb-2"
-            />
-            <input
-              placeholder="Email"
-              onChange={(e) => setEmail(e.target.value)}
-              className="border p-2 w-full mb-2"
-            />
-            <button
-              onClick={bookSeat}
-              className="bg-green-600 text-white w-full p-2"
-            >
-              Confirm Booking
-            </button>
-          </div>
-        )}
+        
+        
 
         <BookingsList
           bookings={bookings}
           deleteBooking={deleteBooking}
+          updateBooking={updateBooking}
         />
       </div>
     </div>

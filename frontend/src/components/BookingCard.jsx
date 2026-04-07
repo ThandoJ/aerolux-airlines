@@ -14,10 +14,13 @@ export default function BookingCard({
   seats,
   bookedSeats,
   seatClass,         
-  setSeatClass       
+  setSeatClass,
+  time,
+  setTime
+      
 }) {
   return (
-    <div className="max-w-5xl mx-auto px-6 -mt-20 relative z-20">
+    <div className="max-w-5xl mx-auto px-6 -mt-9 relative z-20">
       <div className="bg-white shadow-2xl rounded-2xl p-8">
 
         {/* Tabs */}
@@ -57,6 +60,21 @@ export default function BookingCard({
     <option value="first">First Class</option>
   </select>
 
+  {/* Time Slot Dropdown */}
+<select
+  value={time}
+  onChange={(e) => setTime(e.target.value)}
+  className="border p-3 rounded-lg bg-gray-50 focus:ring-2 focus:ring-black"
+>
+  <option value="">Select Departure Time</option>
+  <option value="06:00">06:00 AM</option>
+  <option value="09:00">09:00 AM</option>
+  <option value="12:00">12:00 PM</option>
+  <option value="15:00">03:00 PM</option>
+  <option value="18:00">06:00 PM</option>
+  <option value="21:00">09:00 PM</option>
+</select>
+
   {/* Optional Passenger Input */}
   <select className="border p-3 rounded-lg bg-gray-50">
     <option>1 Adult</option>
@@ -72,13 +90,7 @@ export default function BookingCard({
 </div>
 
 
-        {/* Seat Map */}
-        <SeatMap
-          seats={seats.filter(s => s.class === seatClass)}
-          bookedSeats={bookedSeats}
-          selectedSeat={selectedSeat}
-          setSelectedSeat={setSelectedSeat}
-        />
+       
 
         {/* Form */}
         {selectedSeat && (
@@ -103,7 +115,7 @@ export default function BookingCard({
         {/* Button */}
         <button
           onClick={bookSeat}
-          className="w-full bg-yellow-400 hover:bg-yellow-500 p-4 rounded-lg font-semibold"
+          className="w-full bg-green-400 hover:bg-gray-500 p-4 rounded-lg font-semibold"
         >
           Confirm Booking
         </button>

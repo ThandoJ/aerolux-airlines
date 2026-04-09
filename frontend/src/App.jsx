@@ -34,12 +34,12 @@ export default function App() {
     { id: "2G", class: "business" },
     { id: "3A", class: "economy" },
     { id: "3B", class: "economy" },
-    { id: "3B", class: "economy" },
-    { id: "3B", class: "economy" },
-    { id: "3B", class: "economy" },
-    { id: "3B", class: "economy" },
-    { id: "3B", class: "economy" },
-    { id: "3B", class: "economy" }
+    { id: "3C", class: "economy" },
+    { id: "3D", class: "economy" },
+    { id: "3E", class: "economy" },
+    { id: "3F", class: "economy" },
+    { id: "3G", class: "economy" },
+    { id: "3H", class: "economy" }
   ];
 
   // FETCH bookings
@@ -51,7 +51,7 @@ export default function App() {
 
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/bookings/${date}`
+        `https://aerolux-airlines.onrender.com/api/bookings/${date}`
       );
 
       setBookings(res.data);
@@ -64,19 +64,20 @@ export default function App() {
 
 // ADDED UPDATE FUNCTION
   const updateBooking = async (id) => {
-  const newName = prompt("Enter new name:");
-  const newTime = prompt("Enter new time (e.g. 12:00):");
+  const booking = bookings.find(b => b.id === id);
+  const newName = prompt("Enter new name:", booking.name);
+  const newTime = prompt("Enter new time (e.g. 12:00):", booking.time);
 
   if (!newName || !newTime) return;
 
   try {
     const res = await axios.put(
-      `http://localhost:5000/api/bookings/${id}`,
+      `https://aerolux-airlines.onrender.com/api/bookings/${id}`,
       {
         name: newName,
         time: newTime,
-        date,
-        seat: selectedSeat
+        date: booking.date,
+        seat: booking.seat
       }
     );
 
@@ -103,7 +104,7 @@ export default function App() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/bookings",
+        "https://aerolux-airlines.onrender.com/api/bookings",
         {
           name,
           email,
@@ -134,7 +135,7 @@ export default function App() {
   ======================== */
   const deleteBooking = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/bookings/${id}`);
+      await axios.delete(`https://aerolux-airlines.onrender.com/api/bookings/${id}`);
 
       const updated = bookings.filter(b => b.id !== id);
       setBookings(updated);

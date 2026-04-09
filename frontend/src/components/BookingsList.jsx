@@ -1,4 +1,4 @@
-export default function BookingList({ bookings, deleteBooking }) {
+export default function BookingList({ bookings, deleteBooking, updateBooking }) {
   return (
     <div className="mt-6">
       <h2 className="font-bold text-xl">Bookings</h2>
